@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prestige Watch Gallery - Add Collection</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-dark: #1c2535;
+      --bg-mid: #222d3e;
+      --bg-nav: rgba(20, 28, 42, 0.85);
+      --blue-accent: #2e4a7a;
+      --blue-bright: #3d6199;
+      --gold: #c9a84c;
+      --gold-light: #e0c070;
+      --text-light: #e8ecf5;
+      --text-muted: #8a9ab5;
+      --border: rgba(255, 255, 255, 0.1);
+      --strong-border: rgba(224, 192, 112, 0.28);
+      --panel: rgba(17, 25, 39, 0.58);
+      --panel-soft: rgba(255, 255, 255, 0.05);
+      --input-bg: rgba(9, 16, 28, 0.65);
+      --shadow: 0 32px 64px rgba(0, 0, 0, 0.32);
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: 'Montserrat', sans-serif;
+      color: var(--text-light);
+      background: #151e2e;
+      overflow-x: hidden;
+    }
+
+    .bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 25% 22%, rgba(37, 70, 125, 0.3) 0%, transparent 65%),
+        radial-gradient(ellipse 60% 80% at 88% 16%, rgba(12, 24, 45, 0.75) 0%, transparent 68%),
+        radial-gradient(circle at 75% 68%, rgba(201, 168, 76, 0.16) 0%, transparent 22%),
+        linear-gradient(160deg, #1a2740 0%, #1c2d4a 30%, #1a2535 55%, #151e2e 100%);
+    }
+
+    .bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      background-size: 180px;
+      opacity: 0.35;
+      pointer-events: none;
+    }
+
+    .floor {
+      position: fixed;
+      inset: auto 0 0;
+      height: 180px;
+      z-index: 1;
+      pointer-events: none;
+      background: linear-gradient(to top, rgba(8, 14, 24, 0.62) 0%, transparent 100%);
+    }
+
+    nav {
+      position: fixed;
+      inset: 0 0 auto;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 62px;
+      padding: 0 34px;
+      background: var(--bg-nav);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .nav-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      animation: fadeDown 0.6s ease both;
+    }
+
+    .nav-link,
+    .brand-mark {
+      color: var(--text-light);
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .nav-link:hover,
+    .brand-mark:hover {
+      color: var(--gold-light);
+    }
+
+    .nav-icon,
+    .status-dot {
+      flex-shrink: 0;
+    }
+
+    .nav-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border);
+    }
+
+    .nav-icon svg {
+      width: 15px;
+      height: 15px;
+      fill: var(--text-light);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #4caf50;
+      box-shadow: 0 0 8px rgba(76, 175, 80, 0.75);
+    }
+
+    main {
+      position: relative;
+      z-index: 2;
+      padding: 102px 28px 40px;
+    }
+
+    .layout {
+      width: min(1320px, 100%);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: minmax(300px, 0.95fr) minmax(420px, 1.05fr);
+      gap: 32px;
+      align-items: start;
+    }
+
+    .intro,
+    .form-shell {
+      animation: fadeUp 0.8s ease both;
+    }
+
+    .intro {
+      padding: 28px 4px 0;
+    }
+
+    .eyebrow {
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.38em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(3rem, 5vw, 5.3rem);
+      line-height: 0.98;
+      letter-spacing: -0.02em;
+      margin-bottom: 20px;
+    }
+
+    .lead {
+      max-width: 32rem;
+      font-size: 0.98rem;
+      line-height: 1.8;
+      color: rgba(232, 236, 245, 0.8);
+      margin-bottom: 30px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card,
+    .preview-card,
+    .form-shell {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+
+    .stat-card {
+      border-radius: 18px;
+      padding: 18px;
+    }
+
+    .stat-card span {
+      display: block;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .stat-card strong {
+      display: block;
+      font-size: 1.35rem;
+      font-weight: 600;
+      color: var(--text-light);
+    }
+
+    .preview-card {
+      position: relative;
+      overflow: hidden;
+      border-radius: 28px;
+      padding: 28px;
+      min-height: 280px;
+      display: grid;
+      align-content: start;
+      gap: 18px;
+    }
+
+    .preview-card::before {
+      content: '';
+      position: absolute;
+      top: -70px;
+      right: -40px;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(61, 97, 153, 0.6) 0%, rgba(61, 97, 153, 0) 72%);
+      filter: blur(12px);
+    }
+
+    .preview-card::after {
+      content: '';
+      position: absolute;
+      right: 28px;
+      bottom: 28px;
+      width: 170px;
+      height: 170px;
+      border-radius: 50%;
+      border: 1px solid rgba(224, 192, 112, 0.22);
+      box-shadow: inset 0 0 30px rgba(224, 192, 112, 0.05);
+      opacity: 0.8;
+    }
+
+    .preview-tag {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      font-size: 0.76rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold-light);
+    }
+
+    .preview-tag::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--gold-light);
+      box-shadow: 0 0 10px rgba(224, 192, 112, 0.7);
+    }
+
+    .preview-card h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2rem;
+      line-height: 1.05;
+      max-width: 18rem;
+    }
+
+    .preview-card p {
+      max-width: 23rem;
+      color: rgba(232, 236, 245, 0.78);
+      line-height: 1.7;
+      font-size: 0.92rem;
+    }
+
+    .checklist {
+      display: grid;
+      gap: 10px;
+    }
+
+    .checklist span {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: rgba(232, 236, 245, 0.84);
+      font-size: 0.88rem;
+    }
+
+    .checklist span::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: linear-gradient(180deg, var(--gold-light), var(--gold));
+      box-shadow: 0 0 10px rgba(224, 192, 112, 0.5);
+    }
+
+    .form-shell {
+      border-radius: 32px;
+      padding: 32px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.03)),
+        rgba(11, 18, 31, 0.72);
+    }
+
+    .form-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 28px;
+    }
+
+    .form-header h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.35rem;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .form-header p {
+      max-width: 36rem;
+      color: rgba(232, 236, 245, 0.72);
+      line-height: 1.6;
+      font-size: 0.95rem;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      border: 1px solid var(--strong-border);
+      background: rgba(201, 168, 76, 0.09);
+      color: var(--gold-light);
+      font-size: 0.78rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .status-pill::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--gold-light);
+      box-shadow: 0 0 10px rgba(224, 192, 112, 0.7);
+    }
+
+    .status-message {
+      display: none;
+      margin-bottom: 22px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 1px solid transparent;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    .status-message.is-visible {
+      display: block;
+    }
+
+    .status-message.is-success {
+      background: rgba(76, 175, 80, 0.12);
+      border-color: rgba(76, 175, 80, 0.28);
+      color: #d7f5dc;
+    }
+
+    .status-message.is-error {
+      background: rgba(212, 106, 81, 0.12);
+      border-color: rgba(212, 106, 81, 0.32);
+      color: #ffd9cf;
+    }
+
+    form {
+      display: grid;
+      gap: 22px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .field,
+    .field-wide {
+      display: grid;
+      gap: 10px;
+    }
+
+    .field-wide {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 16px;
+      background: var(--input-bg);
+      color: var(--text-light);
+      font: inherit;
+      padding: 15px 16px;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: rgba(138, 154, 181, 0.7);
+    }
+
+    select {
+      appearance: none;
+      background-image:
+        linear-gradient(45deg, transparent 50%, rgba(232, 236, 245, 0.85) 50%),
+        linear-gradient(135deg, rgba(232, 236, 245, 0.85) 50%, transparent 50%);
+      background-position:
+        calc(100% - 22px) calc(50% - 3px),
+        calc(100% - 16px) calc(50% - 3px);
+      background-size: 6px 6px, 6px 6px;
+      background-repeat: no-repeat;
+      padding-right: 40px;
+    }
+
+    textarea {
+      min-height: 150px;
+      resize: vertical;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: rgba(224, 192, 112, 0.55);
+      box-shadow: 0 0 0 4px rgba(201, 168, 76, 0.12);
+      transform: translateY(-1px);
+    }
+
+    .helper-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .helper-card {
+      border-radius: 20px;
+      padding: 18px;
+      background: var(--panel-soft);
+      border: 1px solid var(--border);
+    }
+
+    .helper-card strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 0.83rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--gold-light);
+    }
+
+    .helper-card p {
+      color: rgba(232, 236, 245, 0.72);
+      line-height: 1.6;
+      font-size: 0.88rem;
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .actions p {
+      color: rgba(138, 154, 181, 0.88);
+      font-size: 0.84rem;
+      line-height: 1.6;
+      max-width: 26rem;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 50px;
+      padding: 0 24px;
+      border-radius: 999px;
+      border: 1px solid rgba(200, 210, 230, 0.3);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-light);
+      font: inherit;
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255, 255, 255, 0.5);
+      background: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 14px 24px rgba(0, 0, 0, 0.22);
+    }
+
+    .btn-primary {
+      border-color: rgba(224, 192, 112, 0.55);
+      background: linear-gradient(135deg, rgba(201, 168, 76, 0.24), rgba(61, 97, 153, 0.32));
+      color: #fdf7e3;
+    }
+
+    .btn-primary:hover {
+      border-color: rgba(224, 192, 112, 0.8);
+      background: linear-gradient(135deg, rgba(201, 168, 76, 0.36), rgba(61, 97, 153, 0.4));
+    }
+
+    @keyframes fadeDown {
+      from {
+        opacity: 0;
+        transform: translateY(-16px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(22px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 1100px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .intro {
+        padding-top: 6px;
+      }
+    }
+
+    @media (max-width: 760px) {
+      nav {
+        padding: 0 18px;
+      }
+
+      .brand-mark {
+        display: none;
+      }
+
+      main {
+        padding: 92px 16px 28px;
+      }
+
+      .form-shell,
+      .preview-card {
+        border-radius: 24px;
+      }
+
+      .stats,
+      .form-grid,
+      .helper-row,
+      .actions {
+        grid-template-columns: 1fr;
+      }
+
+      .form-header,
+      .actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .btn-row {
+        justify-content: stretch;
+      }
+
+      .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="floor"></div>
+
+  <nav>
+    <div class="nav-group">
+      <a class="nav-icon" href="home.html" aria-label="Back to collection home">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 11H7.83l4.58-4.59L11 5l-7 7 7 7 1.41-1.41L7.83 13H20v-2z" />
+        </svg>
+      </a>
+      <a class="nav-link" href="home.html">Collection Home</a>
+      <a class="brand-mark" href="home.html">Prestige Watch Gallery</a>
+    </div>
+    <div class="nav-group">
+      <span class="nav-link">Admin Session</span>
+      <span class="status-dot"></span>
+    </div>
+  </nav>
+
+  <main>
+    <div class="layout">
+      <section class="intro">
+        <p class="eyebrow">Curated Entry</p>
+        <h1>Add a New<br />Collection</h1>
+        <p class="lead">
+          Create a luxury collection page that feels consistent with the Prestige Watch Gallery brand.
+          For now, keep the entry simple with the essentials your admin team needs before publishing.
+        </p>
+
+        <div class="stats">
+          <article class="stat-card">
+            <span>Visual Tone</span>
+            <strong>Refined</strong>
+          </article>
+          <article class="stat-card">
+            <span>Publish Flow</span>
+            <strong>Draft Ready</strong>
+          </article>
+          <article class="stat-card">
+            <span>Catalog Sync</span>
+            <strong>Manual</strong>
+          </article>
+        </div>
+
+        <article class="preview-card">
+          <span class="preview-tag">Collection Checklist</span>
+          <h2>Shape the narrative before the watches arrive.</h2>
+          <p>
+            Use this entry screen to capture the core collection details while keeping the showroom experience
+            clean, polished, and easy to manage.
+          </p>
+          <div class="checklist">
+            <span>Add a strong collection name and a concise luxury-focused description.</span>
+            <span>Set the price and stock so the catalog stays accurate.</span>
+            <span>Include an image URL for a polished visual presentation.</span>
+          </div>
+        </article>
+      </section>
+
+      <section class="form-shell">
+        <div class="form-header">
+          <div>
+            <h2>Collection Details</h2>
+            <p>Fill in the five required fields below. The structure is ready for backend integration whenever you want to connect it to PHP.</p>
+          </div>
+          <span class="status-pill">New Entry</span>
+        </div>
+
+        <div class="status-message" id="status-message" role="status" aria-live="polite"></div>
+
+        <form action="/Prestige-Watch-Gallery/backend/admin/add_product.php" method="post">
+          <div class="form-grid">
+            <div class="field-wide">
+              <label for="collection-name">Name</label>
+              <input id="collection-name" name="name" type="text" placeholder="Midnight Chronograph Series" required />
+            </div>
+
+            <div class="field-wide">
+              <label for="description">Description</label>
+              <textarea id="description" name="description" placeholder="Describe the collection, its design language, and what makes it stand out." required></textarea>
+            </div>
+
+            <div class="field">
+              <label for="price">Price</label>
+              <input id="price" name="price" type="number" min="0" step="0.01" placeholder="12500.00" required />
+            </div>
+
+            <div class="field">
+              <label for="stock">Stock</label>
+              <input id="stock" name="stock" type="number" min="0" step="1" placeholder="12" required />
+            </div>
+
+            <div class="field-wide">
+              <label for="image-url">Image URL</label>
+              <input id="image-url" name="image_url" type="url" placeholder="https://example.com/watch-cover.jpg" required />
+            </div>
+          </div>
+
+          <div class="helper-row">
+            <article class="helper-card">
+              <strong>Curator Note</strong>
+              <p>Keep the description short, premium, and clear so the collection feels polished at first glance.</p>
+            </article>
+            <article class="helper-card">
+              <strong>Catalog Tip</strong>
+              <p>Use a direct image link and accurate stock count so the admin catalog stays dependable.</p>
+            </article>
+          </div>
+
+          <div class="actions">
+            <p>This form now submits directly to the PHP add-product handler and returns a status message here after saving.</p>
+            <div class="btn-row">
+              <a class="btn" href="home.html">Cancel</a>
+              <button class="btn" type="reset">Reset Form</button>
+              <button class="btn btn-primary" type="submit">Save Collection</button>
+            </div>
+          </div>
+        </form>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      var statusMessage = document.getElementById('status-message');
+      var params = new URLSearchParams(window.location.search);
+      var success = params.get('success');
+      var error = params.get('error');
+
+      if (!statusMessage) {
+        return;
+      }
+
+      if (window.location.protocol === 'file:') {
+        statusMessage.textContent = 'Open this page through http://localhost/Prestige-Watch-Gallery so the PHP form handler can run.';
+        statusMessage.classList.add('is-visible', 'is-error');
+        return;
+      }
+
+      if (!success && !error) {
+        return;
+      }
+
+      statusMessage.textContent = success || error;
+      statusMessage.classList.add('is-visible');
+      statusMessage.classList.add(success ? 'is-success' : 'is-error');
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }());
+  </script>
+</body>
+</html>
